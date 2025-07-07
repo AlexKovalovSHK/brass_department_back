@@ -76,7 +76,85 @@ jobs:
             # Запускаем docker-compose
             # Он автоматически остановит и пересоздаст контейнер, если образ изменился
             docker-compose up -d && \
+          name: Build and Deploy to Server
+
+on:
+  push:
+    branches: [ "main" ]
+
+env:
+  DOCKER_IMAGE_NAME: brass_server  # Имя образа и .tar файла
+  DEPLOY_DIR: /root/brass_server   # Директория для деплоя на сервере
+  CONTAINER_NAME: brass_server     # Имя контейнера
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      # 1. Скачиваем исходный код
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      # 2. Настраиваем Java и кэшируем зависимости Maven
+      - name: Set up JDK 17
+        uses: actions/setup-java@v3
+        with:
+          distribution: 'temurin'
+          java-version: '17'
+          cache: 'maven'
+
+      # 3. Собираем приложение с Maven
+      - name: Build with Maven
+        run: mvn clean package -DskipTests
+
+      # 4. Собираем Docker-образ
+      - name: Build Docker image
+        run: docker build -t ${{ env.DOCKER_IMAGE_NAME }} .
+
+      # 5. Сохраняем образ в .tar архив
+      - name: Save Docker image to a tarball
+        run: docker save ${{ env.DOCKER_IMAGE_NAME }} -o ${{ env.DOCKER_IMAGE_NAME }}.tar
+
+      # 6. Устанавливаем и настраиваем SSH-клиент
+      # Этот способ с SSH-ключом намного безопаснее, чем sshpass!
+      - name: Install SSH Key
+        uses: shimataro/ssh-key-action@v2
+        with:
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          known_hosts: 'just-a-placeholder-so-we-dont-get-errors'
+
+      - name: Adding known_hosts
+        run: ssh-keyscan -H ${{ secrets.SERVER_IP }} >> ~/.ssh/known_hosts
+
+        # 7. Деплой на сервер
+      - name: Deploy to Server
+        run: |
+          # ... (создание директории и копирование файлов остаются без изменений) ...
+
+          # Выполняем команды на удаленном сервере
+          ssh ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_IP }} '
+            # Переходим в директорию деплоя
+            cd ${{ env.DEPLOY_DIR }} && \
           
-            # Очищаем старые, неиспользуемые образы Docker
+            # --- ИЗМЕНЕНИЕ ЗДЕСЬ ---
+            # 1. Сначала останавливаем и удаляем старый контейнер, если он существует.
+            # `|| true` в конце нужно, чтобы команда не завершилась с ошибкой,
+            # если контейнера с таким именем еще не существует (например, при самом первом деплое).
+            echo "Stopping and removing old container..."
+            docker stop ${{ env.CONTAINER_NAME }} || true && \
+            docker rm ${{ env.CONTAINER_NAME }} || true && \
+          
+            # 2. Загружаем новый образ из архива
+            echo "Loading new image..."
+            docker load -i ${{ env.DOCKER_IMAGE_NAME }}.tar && \
+          
+            # 3. Запускаем docker-compose
+            # Теперь он гарантированно сможет создать контейнер, так как старый удален.
+            echo "Starting new container with docker-compose..."
+            docker-compose up -d && \
+          
+            # 4. Очищаем старые, неиспользуемые образы Docker
+            echo "Pruning old images..."
             docker image prune -af
           '
