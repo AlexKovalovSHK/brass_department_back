@@ -1,0 +1,37 @@
+package com.brass_admin_d.brass_admin_d.user.service;
+
+import com.brass_admin_d.brass_admin_d.user.dto.ChangeRoleResponseDto;
+import com.brass_admin_d.brass_admin_d.user.dto.NewUserDto;
+import com.brass_admin_d.brass_admin_d.user.dto.UserDto;
+import com.brass_admin_d.brass_admin_d.user.dto.UserLoginRequestDto;
+import org.springframework.data.domain.PageRequest;
+import jakarta.servlet.http.Cookie;
+import org.springframework.web.multipart.MultipartFile;
+
+import java.util.List;
+
+
+public interface UserAccountService {
+
+    UserDto loginUser(UserLoginRequestDto data);
+
+    List<Cookie> logoutUser();
+
+    UserDto findUserByUsername(String username);
+
+    UserDto createUser(NewUserDto user);
+    UserDto findUserById(Integer userId);
+
+    UserDto deleteUserById(Integer userId);
+
+    Iterable<UserDto> findAll(PageRequest pageRequest);
+
+    ChangeRoleResponseDto changeRoleList(Integer userId, String roleName, Boolean isAddRole);
+
+    void changePassword(Integer userId, String password);
+
+    void uploadAvatar(Integer userId, MultipartFile file);
+
+    void removeAvatar(Integer userId);
+
+}

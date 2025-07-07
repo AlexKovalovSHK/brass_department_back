@@ -1,0 +1,11 @@
+version: '3.8'
+
+services:
+  regent_server:
+    image: regent_server:latest
+    container_name: regent_server
+    restart: always
+    env_file:
+      - .env  # Добавляем ссылку на .env файл, который будет использоваться для переменных окружения
+    ports:
+      - "8080:8080"
