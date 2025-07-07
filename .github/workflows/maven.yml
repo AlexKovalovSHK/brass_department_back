@@ -63,6 +63,7 @@ jobs:
           echo "BRASS_DATASOURCE_URL=${{ secrets.BRASS_DATASOURCE_URL }}" > .env
           echo "BRASS_DATASOURCE_USERNAME=${{ secrets.BRASS_DATASOURCE_USERNAME }}" >> .env
           echo "BRASS_DATASOURCE_PASSWORD=${{ secrets.BRASS_DATASOURCE_PASSWORD }}" >> .env
+          echo "BRASS_DATASOURCE_PASSWORD=${{ secrets.BRASS_DATASOURCE_PASSWORD }}" >> .env
           scp .env ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_IP }}:${{ env.DEPLOY_DIR }}
 
           # Выполняем команды на удаленном сервере
