@@ -1,11 +1,16 @@
+# Исправленный docker-compose.yml
 version: '3.8'
 
 services:
-  regent_server:
+  brass_server:
     image: brass_server:latest
     container_name: brass_server
     restart: always
     env_file:
-      - .env  # Добавляем ссылку на .env файл, который будет использоваться для переменных окружения
+      - .env
+    environment:
+      # Надежно передаем порт в приложение
+      JAVA_OPTS: "-Dserver.port=8081"
     ports:
-      - "8081:8080"
+      # Теперь пробрасываем 8081 на 8081
+      - "8081:8081"
