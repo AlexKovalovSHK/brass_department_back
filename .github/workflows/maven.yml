@@ -52,7 +52,7 @@ jobs:
         # 7. Деплой на сервер
       - name: Deploy to Server
         run: |
-          # ... (создание директории и копирование файлов остаются без изменений) ...
+          scp docker-compose.yml ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_IP }}:${{ env.DEPLOY_DIR }}/docker-compose.yml
 
           # Выполняем команды на удаленном сервере
           ssh ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_IP }} '
