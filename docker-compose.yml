@@ -1,4 +1,3 @@
-# Исправленный docker-compose.yml
 version: '3.8'
 
 services:
@@ -8,9 +7,5 @@ services:
     restart: always
     env_file:
       - .env
-    environment:
-      # Надежно передаем порт в приложение
-      JAVA_OPTS: "-Dserver.port=8081"
     ports:
-      # Теперь пробрасываем 8081 на 8081
-      - "8081:8081"
+      - "8081:8080"
