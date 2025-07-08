@@ -2,8 +2,10 @@ package com.brass_admin_d.brass_admin_d.department.service;
 
 import com.brass_admin_d.brass_admin_d.department.dto.DepartmentDto;
 import com.brass_admin_d.brass_admin_d.department.dto.NewDepartmentDto;
+import com.brass_admin_d.brass_admin_d.department.dto.UpdateDepartmentDto;
 import com.brass_admin_d.brass_admin_d.department.model.Department;
 import com.brass_admin_d.brass_admin_d.department.dao.DepartmentRepository;
+import com.brass_admin_d.brass_admin_d.department.model.DepartmentStatus;
 import com.brass_admin_d.brass_admin_d.user.dao.RoleRepository;
 import com.brass_admin_d.brass_admin_d.user.dao.UserRepository;
 import com.brass_admin_d.brass_admin_d.user.model.Role;
@@ -19,6 +21,9 @@ import java.time.LocalDate;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
+
+import static com.brass_admin_d.brass_admin_d.department.model.DepartmentStatus.CLOSED;
+import static com.brass_admin_d.brass_admin_d.department.model.DepartmentStatus.OPEN;
 
 @Service
 @RequiredArgsConstructor // Автоматически создает конструктор для final полей (Lombok)
@@ -45,6 +50,7 @@ public class DepartmentService {
         Department department = new Department();
         department.setDepartName(requestDto.getDepartName());
         department.setCreationDate(LocalDate.now());
+        department.setStatus(OPEN);
         Department savedDepartment = departmentRepository.save(department);
 
         // 2. Создаем админа
@@ -92,12 +98,28 @@ public class DepartmentService {
      * @throws EntityNotFoundException если департамент не найден.
      */
     @Transactional
-    public Boolean deleteDepartment(Long id) {
-        if (!departmentRepository.existsById(id)) {
-            throw new EntityNotFoundException("Department not found with id: " + id);
+    public Boolean deleteDepartment(Long id, Boolean delete) {
+        if(delete) {
+            if (!departmentRepository.existsById(id)) {
+                throw new EntityNotFoundException("Department not found with id: " + id);
+            }
+            departmentRepository.deleteById(id);
+            return true;
+        } else  {
+            Department department = departmentRepository.findById(id).orElseThrow(() -> new EntityNotFoundException("Department not found with id: " + id));
+            department.setStatus(CLOSED);
+            departmentRepository.save(department);
+            return true;
         }
-        departmentRepository.deleteById(id);
-        return true;
+
+    }
+
+    public  DepartmentDto updateDepartment(UpdateDepartmentDto dto) {
+        Department department = departmentRepository.findById(dto.getId()).orElseThrow(() -> new EntityNotFoundException("Department not found with id: " + dto.getId()));
+        department.setStatus(DepartmentStatus.valueOf(dto.getStatus()));
+        department.setDepartName(dto.getDepartName());
+        departmentRepository.save(department);
+        return departmentMapper.map(department, DepartmentDto.class);
     }
 
     /**

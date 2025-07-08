@@ -35,10 +35,13 @@ public class Department {
     @OneToMany(
             mappedBy = "department", // (1)
             cascade = {CascadeType.PERSIST, CascadeType.MERGE}, // (2)
-            orphanRemoval = false // (3)
+            orphanRemoval = true // (3)
     )
     @JsonManagedReference // (4) Опционально, но рекомендуется
     private List<User> users = new ArrayList<>();
+
+    @Column(name = "status")
+    private DepartmentStatus status = DepartmentStatus.OPEN;
 
     // Вспомогательные методы для синхронизации
     public void addUser(User user) {

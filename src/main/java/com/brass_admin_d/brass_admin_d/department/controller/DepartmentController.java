@@ -2,6 +2,7 @@ package com.brass_admin_d.brass_admin_d.department.controller;
 
 import com.brass_admin_d.brass_admin_d.department.dto.DepartmentDto;
 import com.brass_admin_d.brass_admin_d.department.dto.NewDepartmentDto;
+import com.brass_admin_d.brass_admin_d.department.dto.UpdateDepartmentDto;
 import com.brass_admin_d.brass_admin_d.department.service.DepartmentService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -45,10 +46,20 @@ public class DepartmentController {
         return ResponseEntity.ok(departments);
     }
 
-    @DeleteMapping("/{id}")
-    public ResponseEntity<Boolean> deleteDepartment(@PathVariable Long id) {
+    @DeleteMapping("/{id}/isDeleted/{delete}")
+    public ResponseEntity<Boolean> deleteDepartment(@PathVariable Long id, @PathVariable Boolean delete) {
         try {
-            Boolean result = departmentService.deleteDepartment(id);
+            Boolean result = departmentService.deleteDepartment(id, delete);
+            return ResponseEntity.ok(result);
+        } catch (EntityNotFoundException e) {
+            return ResponseEntity.notFound().build();
+        }
+    }
+
+    @PutMapping
+    public  ResponseEntity<DepartmentDto> updateDepartment(@RequestBody UpdateDepartmentDto dto) {
+        try {
+            DepartmentDto result = departmentService.updateDepartment(dto);
             return ResponseEntity.ok(result);
         } catch (EntityNotFoundException e) {
             return ResponseEntity.notFound().build();
