@@ -8,6 +8,7 @@ import com.brass_admin_d.brass_admin_d.user.service.UserAccountService;
 import com.brass_admin_d.brass_admin_d.utils.MessageResponseDto;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -28,8 +29,8 @@ public class AuthController {
     @PostMapping("/login")
     public ResponseEntity<UserDto> loginUser(@RequestBody UserLoginRequestDto data, HttpServletResponse response) {
         UserDto userResponseDto = userAccountService.loginUser(data);
-        response.addCookie(authService.createAccessTokenCookie(userResponseDto.getUsername()));
-        response.addCookie(authService.createRefreshToken(userResponseDto.getUsername()));
+        response.addHeader(HttpHeaders.SET_COOKIE, authService.createAccessTokenCookie(userResponseDto.getUsername()).toString());
+        response.addHeader(HttpHeaders.SET_COOKIE, authService.createRefreshTokenCookie(userResponseDto.getUsername()).toString());
         return ResponseEntity.ok(userResponseDto);
     }
 

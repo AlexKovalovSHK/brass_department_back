@@ -15,6 +15,8 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.ResponseCookie;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -49,10 +51,15 @@ public class JwtTokenFilter extends OncePerRequestFilter {
                 } else {
                     userDetails = userDetailsService.loadUserByUsername(tokenService.getUsernameFromToken(refreshToken, "REFRESH"));
                     String newAccessToken = tokenService.generateAccessToken(userDetails);
-                    Cookie cookie = new Cookie("access-token", newAccessToken);
-                    cookie.setPath("/");
-                    cookie.setHttpOnly(true);
-                    response.addCookie(cookie);
+                    ResponseCookie accessTokenCookie = ResponseCookie.from("access-token", newAccessToken)
+                            .httpOnly(true)
+                            .secure(true)
+                            .path("/")
+                            .maxAge(900) // 15 минут, как в вашем application.properties
+                            .sameSite("None")
+                            .build();
+
+                    response.addHeader(HttpHeaders.SET_COOKIE, accessTokenCookie.toString());
                 }
 
                 UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(userDetails,
@@ -61,10 +68,8 @@ public class JwtTokenFilter extends OncePerRequestFilter {
                 SecurityContextHolder.getContext().setAuthentication(authentication);
             }
         } catch (RuntimeException e) {
-            List<Cookie> cookies = new ArrayList<>();
-            cookies.add(resetCookie("access-token"));
-            cookies.add(resetCookie("refresh-token"));
-            cookies.forEach(response::addCookie);
+            response.addHeader(HttpHeaders.SET_COOKIE, resetCookie("access-token").toString());
+            response.addHeader(HttpHeaders.SET_COOKIE, resetCookie("refresh-token").toString());
             response.setStatus(HttpStatus.UNAUTHORIZED.value());
         }
 
@@ -85,11 +90,13 @@ public class JwtTokenFilter extends OncePerRequestFilter {
         return null;
     }
 
-    private Cookie resetCookie(String cookieName) {
-        Cookie cookie = new Cookie(cookieName, null);
-        cookie.setPath("/");
-        cookie.setHttpOnly(true);
-        cookie.setMaxAge(0);
-        return cookie;
+    private ResponseCookie resetCookie(String cookieName) {
+        return ResponseCookie.from(cookieName, null)
+                .httpOnly(true)
+                .secure(true)
+                .path("/")
+                .maxAge(0) // Немедленно удаляем куки
+                .sameSite("None")
+                .build();
     }
 }

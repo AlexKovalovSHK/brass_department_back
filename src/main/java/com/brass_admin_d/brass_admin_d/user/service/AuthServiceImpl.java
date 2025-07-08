@@ -6,6 +6,7 @@ import com.brass_admin_d.brass_admin_d.security.utils.UserDetailsServiceImpl;
 import jakarta.servlet.http.Cookie;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.ResponseCookie;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 
@@ -35,23 +36,32 @@ public class AuthServiceImpl implements AuthService {
     }
 
     @Override
-    public Cookie createAccessTokenCookie(String username) {
+    public ResponseCookie createAccessTokenCookie(String username) {
         String accessToken = generateAccessToken(username);
-        Cookie cookie = new Cookie("access-token", accessToken);
-        cookie.setPath("/");
-        cookie.setHttpOnly(true);
-        cookie.setMaxAge((int) accessTokenLifetime.getSeconds());
-        return cookie;
+
+        return ResponseCookie.from("access-token", accessToken)
+                .httpOnly(true)
+                .secure(true)
+                .path("/")
+                .maxAge(accessTokenLifetime) // Можно передавать Duration напрямую
+                .sameSite("None")
+                .build();
     }
 
+    // Изменяем возвращаемый тип с Cookie на ResponseCookie
     @Override
-    public Cookie createRefreshToken(String username) {
+    public ResponseCookie createRefreshTokenCookie(String username) { // Я переименовал его для соответствия с контроллером
         String refreshToken = generateRefreshToken(username);
-        Cookie cookie = new Cookie("refresh-token", refreshToken);
-        cookie.setPath("/");
-        cookie.setHttpOnly(true);
-        cookie.setMaxAge((int) refreshTokenLifetime.getSeconds());
-        //cookie.setSecure(true); // TODO проверить на фронтенде при влюченной настройке
-        return cookie;
+
+        return ResponseCookie.from("refresh-token", refreshToken)
+                .httpOnly(true)
+                .secure(true)
+                .path("/")
+                .maxAge(refreshTokenLifetime) // Можно передавать Duration напрямую
+                .sameSite("None")
+                .build();
     }
+
+
+
 }

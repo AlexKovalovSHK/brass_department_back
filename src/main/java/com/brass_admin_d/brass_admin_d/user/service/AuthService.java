@@ -2,6 +2,7 @@ package com.brass_admin_d.brass_admin_d.user.service;
 
 
 import jakarta.servlet.http.Cookie;
+import org.springframework.http.ResponseCookie;
 
 public interface AuthService {
 
@@ -9,7 +10,6 @@ public interface AuthService {
 
     String generateRefreshToken(String username);
 
-    Cookie createAccessTokenCookie(String username);
-
-    Cookie createRefreshToken(String username);
+    ResponseCookie createAccessTokenCookie(String username);
+    ResponseCookie createRefreshTokenCookie(String username);
 }
