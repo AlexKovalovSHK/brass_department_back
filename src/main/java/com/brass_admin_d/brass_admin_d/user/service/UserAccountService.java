@@ -20,18 +20,18 @@ public interface UserAccountService {
     UserDto findUserByUsername(String username);
 
     UserDto createUser(NewUserDto user);
-    UserDto findUserById(Integer userId);
+    UserDto findUserById(Long userId);
 
-    UserDto deleteUserById(Integer userId);
+    UserDto deleteUserById(Long userId);
 
     Iterable<UserDto> findAll(PageRequest pageRequest);
 
-    ChangeRoleResponseDto changeRoleList(Integer userId, String roleName, Boolean isAddRole);
+    ChangeRoleResponseDto changeRoleList(Long userId, String roleName, Boolean isAddRole);
 
-    void changePassword(Integer userId, String password);
+    void changePassword(Long userId, String password);
 
-    void uploadAvatar(Integer userId, MultipartFile file);
+    void uploadAvatar(Long userId, MultipartFile file);
 
-    void removeAvatar(Integer userId);
+    void removeAvatar(Long userId);
 
 }

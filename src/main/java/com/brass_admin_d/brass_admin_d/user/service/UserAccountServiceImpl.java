@@ -32,6 +32,7 @@ import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -59,7 +60,15 @@ public class UserAccountServiceImpl implements UserAccountService, CommandLineRu
                     );
                     SecurityContextHolder.getContext().setAuthentication(authentication);
 
-                    return modelMapper.map(user, UserDto.class);
+                    UserDto dto = new UserDto();
+                    dto.setId(user.getId());
+                    dto.setUsername(user.getUsername());
+                    dto.setRoles(user.getRoles().stream()
+                            .map(Role::getName)
+                            .collect(Collectors.toSet()));
+                    dto.setDepartmentId(user.getDepartment().getId());
+
+                    return dto;
 
                 } else {
                     throw new BadCredentialsOnLoginException();
@@ -116,14 +125,21 @@ public class UserAccountServiceImpl implements UserAccountService, CommandLineRu
     }
 
     @Override
-    public UserDto findUserById(Integer userId) {
-        User userAccount = userRepository.findById(userId).orElseThrow(UserNotFoundException::new);
-        return modelMapper.map(userAccount, UserDto.class);
+    public UserDto findUserById(Long userId) {
+        User user = userRepository.findById(userId).orElseThrow(UserNotFoundException::new);
+        UserDto dto = new UserDto();
+        dto.setId(user.getId());
+        dto.setUsername(user.getUsername());
+        dto.setRoles(user.getRoles().stream()
+                .map(Role::getName)
+                .collect(Collectors.toSet()));
+        dto.setDepartmentId(user.getDepartment().getId());
+        return dto;
     }
 
     @Transactional
     @Override
-    public UserDto deleteUserById(Integer userId) {
+    public UserDto deleteUserById(Long userId) {
         User userAccount = userRepository.findById(userId).orElseThrow(UserNotFoundException::new);
         userRepository.deleteById(userId);
         return modelMapper.map(userAccount, UserDto.class);
@@ -136,7 +152,7 @@ public class UserAccountServiceImpl implements UserAccountService, CommandLineRu
     }
 
     @Override
-    public ChangeRoleResponseDto changeRoleList(Integer userId, String roleName, Boolean isAddRole) {
+    public ChangeRoleResponseDto changeRoleList(Long userId, String roleName, Boolean isAddRole) {
         User userAccount = userRepository.findById(userId).orElseThrow(UserNotFoundException::new);
         Role role = roleRepository.findByName(roleName.toUpperCase()).orElseThrow(RoleNotFoundException::new);
         boolean res;
@@ -152,19 +168,19 @@ public class UserAccountServiceImpl implements UserAccountService, CommandLineRu
     }
 
     @Override
-    public void changePassword(Integer userId, String password) {
+    public void changePassword(Long userId, String password) {
         User userAccount = userRepository.findById(userId).orElseThrow(UserNotFoundException::new);
         userAccount.setPassword(passwordEncoder.encode(password));
         userRepository.save(userAccount);
     }
 
     @Override
-    public void uploadAvatar(Integer userId, MultipartFile file) {
+    public void uploadAvatar(Long userId, MultipartFile file) {
         String fileName = file.getOriginalFilename();
     }
 
     @Override
-    public void removeAvatar(Integer userId) {
+    public void removeAvatar(Long userId) {
 
     }
 

@@ -51,21 +51,21 @@ public class UserController {
     @Operation(summary = "Получить пользователя по ID")
     @GetMapping("/{userId}")
     public UserDto findUserById(
-            @Parameter(description = "ID пользователя") @PathVariable Integer userId) {
+            @Parameter(description = "ID пользователя") @PathVariable Long userId) {
         return userAccountService.findUserById(userId);
     }
 
     @Operation(summary = "Удалить пользователя по ID")
     @DeleteMapping("/{userId}")
     public UserDto deleteUser(
-            @Parameter(description = "ID пользователя") @PathVariable Integer userId) {
+            @Parameter(description = "ID пользователя") @PathVariable Long userId) {
         return userAccountService.deleteUserById(userId);
     }
 
     @Operation(summary = "Изменить пароль пользователя")
     @PutMapping("/{userId}/password")
     public ResponseEntity<MessageResponseDto> changePassword(
-            @Parameter(description = "ID пользователя") @PathVariable Integer userId,
+            @Parameter(description = "ID пользователя") @PathVariable Long userId,
             @Parameter(description = "Новый пароль в заголовке запроса")
             @RequestHeader("X-Password") String password) {
         userAccountService.changePassword(userId, password);
@@ -76,14 +76,14 @@ public class UserController {
     @PostMapping("/{userId}/avatar")
     public ResponseEntity<Void> uploadAvatar(
             @Parameter(description = "Файл изображения") @RequestParam("file") MultipartFile file,
-            @PathVariable Integer userId) {
+            @PathVariable Long userId) {
         userAccountService.uploadAvatar(userId, file);
         return ResponseEntity.ok().build();
     }
 
     @Operation(summary = "Удалить аватар пользователя")
     @DeleteMapping("/{userId}/avatar")
-    public ResponseEntity<Void> removeAvatar(@PathVariable Integer userId) {
+    public ResponseEntity<Void> removeAvatar(@PathVariable Long userId) {
         userAccountService.removeAvatar(userId);
         return ResponseEntity.noContent().build();
     }
@@ -95,7 +95,7 @@ public class UserController {
             @PathVariable String role) {
         try {
             int id = Integer.parseInt(userId);
-            return userAccountService.changeRoleList(id, role, true);
+            return userAccountService.changeRoleList((long) id, role, true);
         } catch (NumberFormatException e) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Incorrect user ID format");
         }
@@ -108,7 +108,7 @@ public class UserController {
             @PathVariable String role) {
         try {
             int id = Integer.parseInt(userId);
-            return userAccountService.changeRoleList(id, role, false);
+            return userAccountService.changeRoleList((long) id, role, false);
         } catch (NumberFormatException e) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Incorrect user ID format");
         }

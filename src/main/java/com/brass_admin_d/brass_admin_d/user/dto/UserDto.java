@@ -15,4 +15,5 @@ public class UserDto {
     Long id;
     String username;
     Set<String> roles;
+    Long departmentId;
 }
