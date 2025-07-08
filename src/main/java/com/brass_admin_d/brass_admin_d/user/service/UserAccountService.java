@@ -6,6 +6,7 @@ import com.brass_admin_d.brass_admin_d.user.dto.UserDto;
 import com.brass_admin_d.brass_admin_d.user.dto.UserLoginRequestDto;
 import org.springframework.data.domain.PageRequest;
 import jakarta.servlet.http.Cookie;
+import org.springframework.http.ResponseCookie;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
@@ -15,7 +16,7 @@ public interface UserAccountService {
 
     UserDto loginUser(UserLoginRequestDto data);
 
-    List<Cookie> logoutUser();
+    List<ResponseCookie> logoutUser();
 
     UserDto findUserByUsername(String username);
 

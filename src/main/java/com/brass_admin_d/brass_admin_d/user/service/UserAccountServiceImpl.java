@@ -19,6 +19,7 @@ import org.modelmapper.ModelMapper;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.core.annotation.Order;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.http.ResponseCookie;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -84,8 +85,8 @@ public class UserAccountServiceImpl implements UserAccountService, CommandLineRu
     }
 
     @Override
-    public List<Cookie> logoutUser() {
-        List<Cookie> cookies = new ArrayList<>();
+    public List<ResponseCookie> logoutUser() {
+        List<ResponseCookie> cookies = new ArrayList<>();
         cookies.add(resetCookie("access-token"));
         cookies.add(resetCookie("refresh-token"));
         return cookies;
@@ -226,12 +227,15 @@ public class UserAccountServiceImpl implements UserAccountService, CommandLineRu
         }
     }
 
-    private Cookie resetCookie(String cookieName) {
-        Cookie cookie = new Cookie(cookieName, null);
-        cookie.setPath("/");
-        cookie.setHttpOnly(true);
-        cookie.setMaxAge(0);
-        return cookie;
+    private ResponseCookie resetCookie(String cookieName) {
+        // Создаем "сбрасывающую" куки с правильными атрибутами
+        return ResponseCookie.from(cookieName, null) // пустое значение
+                .maxAge(0) // немедленно истекает
+                .path("/")
+                .httpOnly(true)
+                .secure(true) // Обязательно
+                .sameSite("None") // Обязательно, чтобы соответствовать кукам логина
+                .build();
     }
 
 }

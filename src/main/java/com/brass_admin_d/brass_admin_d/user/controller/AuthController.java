@@ -36,7 +36,9 @@ public class AuthController {
 
     @GetMapping("/logout")
     public ResponseEntity<MessageResponseDto> logout(HttpServletResponse response) {
-        userAccountService.logoutUser().forEach(response::addCookie);
+        userAccountService.logoutUser().forEach(cookie ->
+                response.addHeader(HttpHeaders.SET_COOKIE, cookie.toString())
+        );
         return ResponseEntity.ok(new MessageResponseDto("Successful logout"));
     }
 
