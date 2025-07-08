@@ -52,31 +52,32 @@ jobs:
         # 7. Деплой на сервер
       - name: Deploy to Server
         run: |
-          scp docker-compose.yml ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_IP }}:${{ env.DEPLOY_DIR }}/docker-compose.yml
-
-          # Выполняем команды на удаленном сервере
-          ssh ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_IP }} '
-            # Переходим в директорию деплоя
-            cd ${{ env.DEPLOY_DIR }} && \
-          
-            # --- ИЗМЕНЕНИЕ ЗДЕСЬ ---
-            # 1. Сначала останавливаем и удаляем старый контейнер, если он существует.
-            # `|| true` в конце нужно, чтобы команда не завершилась с ошибкой,
-            # если контейнера с таким именем еще не существует (например, при самом первом деплое).
-            echo "Stopping and removing old container..."
-            docker stop ${{ env.CONTAINER_NAME }} || true && \
-            docker rm ${{ env.CONTAINER_NAME }} || true && \
-          
-            # 2. Загружаем новый образ из архива
-            echo "Loading new image..."
-            docker load -i ${{ env.DOCKER_IMAGE_NAME }}.tar && \
-          
-            # 3. Запускаем docker-compose
-            # Теперь он гарантированно сможет создать контейнер, так как старый удален.
-            echo "Starting new container with docker-compose..."
-            docker-compose up -d && \
-          
-            # 4. Очищаем старые, неиспользуемые образы Docker
-            echo "Pruning old images..."
-            docker image prune -af
-          '
+            # 1. Копируем docker-compose.yml
+                scp docker-compose.yml ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_IP }}:${{ env.DEPLOY_DIR }}/docker-compose.yml
+                
+                # 2. !!! ДОБАВЬТЕ ЭТУ СТРОКУ !!!
+                # Копируем .tar файл с новым образом на сервер
+                scp ${{ env.DOCKER_IMAGE_NAME }}.tar ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_IP }}:${{ env.DEPLOY_DIR }}/${{ env.DOCKER_IMAGE_NAME }}.tar
+                
+                # 3. Выполняем команды на удаленном сервере
+                ssh ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_IP }} '
+                  # Переходим в директорию деплоя
+                  cd ${{ env.DEPLOY_DIR }} && \
+                
+                  # Останавливаем и удаляем старый контейнер
+                  echo "Stopping and removing old container..."
+                  docker stop ${{ env.CONTAINER_NAME }} || true && \
+                  docker rm ${{ env.CONTAINER_NAME }} || true && \
+                
+                  # Загружаем НОВЫЙ образ из .tar архива, который мы только что скопировали
+                  echo "Loading new image..."
+                  docker load -i ${{ env.DOCKER_IMAGE_NAME }}.tar && \
+                
+                  # Запускаем docker-compose
+                  echo "Starting new container with docker-compose..."
+                  docker-compose up -d && \
+                
+                  # Очищаем старые, неиспользуемые образы Docker
+                  echo "Pruning old images..."
+                  docker image prune -af
+                '
