@@ -21,6 +21,6 @@ public class CustomSecurity {
     }
 
     public boolean isUserAdmin(Supplier<Authentication> authentication) {
-        return authentication.get().getAuthorities().contains(new SimpleGrantedAuthority("ROLE_ADMINISTRATOR"));
+        return authentication.get().getAuthorities().contains(new SimpleGrantedAuthority("ADMINISTRATOR"));
     }
 }
